@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Toolkit</title>
+<style>
+  :root {
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --surface2: #f0f2f5;
+    --border: #e2e6ea;
+    --text: #1a1d23;
+    --muted: #6b7280;
+    --hint: #9ca3af;
+    --accent: #4f46e5;
+    --accent-light: #eef2ff;
+    --green: #059669;
+    --green-light: #ecfdf5;
+    --blue: #2563eb;
+    --blue-light: #eff6ff;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* NAV */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 58px; position: sticky; top: 0; z-index: 100; }
+  .brand { font-size: 18px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .brand span { font-size: 20px; }
+  nav { display: flex; gap: 2px; }
+  nav button { background: none; border: none; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13.5px; color: var(--muted); cursor: pointer; font-weight: 500; transition: all .15s; white-space: nowrap; }
+  nav button:hover { background: var(--surface2); color: var(--text); }
+  nav button.active { background: var(--accent-light); color: var(--accent); }
+
+  /* LAYOUT */
+  main { max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .page-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+
+  /* DASHBOARD */
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+  .metric-card .label { font-size: 12px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .4px; }
+  .metric-card .value { font-size: 22px; font-weight: 700; color: var(--text); }
+  .metric-card .value.green { color: var(--green); }
+  .metric-card .icon { font-size: 22px; margin-bottom: 8px; }
+
+  /* CALC CARD */
+  .calc-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+
+  /* FIELDS */
+  .field { margin-bottom: 20px; }
+  .field-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .field-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .field-value { font-size: 14px; font-weight: 700; color: var(--accent); background: var(--accent-light); padding: 3px 10px; border-radius: 20px; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
+  .range-bounds { display: flex; justify-content: space-between; font-size: 11px; color: var(--hint); margin-top: 4px; }
+
+  /* TENURE TOGGLE */
+  .tenure-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .tenure-row label { font-size: 13px; font-weight: 600; color: var(--muted); flex: 1; }
+  .pill-group { display: flex; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+  .pill-btn { padding: 4px 12px; font-size: 12px; border: none; background: none; cursor: pointer; color: var(--muted); font-weight: 500; transition: all .15s; }
+  .pill-btn.active { background: var(--accent); color: #fff; }
+
+  /* RESULTS */
+  .results { border-top: 1px solid var(--border); margin-top: 20px; padding-top: 16px; }
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--bg); }
+  .result-row:last-child { border-bottom: none; }
+  .result-label { font-size: 14px; color: var(--muted); }
+  .result-val { font-size: 15px; font-weight: 700; color: var(--text); }
+  .result-val.big { font-size: 22px; color: var(--accent); }
+  .result-val.green { color: var(--green); }
+  .badge { font-size: 11px; background: var(--green-light); color: var(--green); padding: 2px 8px; border-radius: 20px; margin-left: 8px; font-weight: 600; }
+
+  /* TOGGLE GROUP */
+  .toggle-group { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 20px; }
+  .toggle-btn { flex: 1; padding: 9px; font-size: 13.5px; border: none; background: none; cursor: pointer; color: var(--muted); font-weight: 500; transition: all .15s; }
+  .toggle-btn.active { background: var(--accent); color: #fff; }
+
+  /* SELECT */
+  select { width: 100%; padding: 9px 12px; font-size: 13.5px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); cursor: pointer; }
+
+  /* SAVE BTN */
+  .save-btn { width: 100%; margin-top: 18px; padding: 11px; font-size: 14px; font-weight: 600; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all .15s; }
+  .save-btn:hover { background: #4338ca; }
+  .save-btn:active { transform: scale(.98); }
+
+  /* CHART */
+  .chart-wrap { margin-top: 20px; background: var(--surface2); border-radius: var(--radius-sm); padding: 16px; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 16px; height: 140px; justify-content: center; }
+  .bar-col { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; max-width: 100px; }
+  .bar { width: 100%; border-radius: 4px 4px 0 0; transition: height .4s ease; min-height: 4px; }
+  .bar.invested { background: var(--blue); }
+  .bar.returns { background: var(--green); }
+  .bar.total { background: var(--accent); }
+  .bar-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .bar-val { font-size: 11px; font-weight: 700; color: var(--text); text-align: center; }
+
+  /* HISTORY */
+  .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--bg); }
+  .history-item:last-child { border-bottom: none; }
+  .hist-left { display: flex; align-items: center; gap: 10px; }
+  .hist-type { font-size: 11px; background: var(--accent-light); color: var(--accent); padding: 3px 9px; border-radius: 20px; font-weight: 600; }
+  .hist-date { font-size: 12px; color: var(--hint); }
+  .hist-val { font-size: 14px; font-weight: 700; color: var(--text); }
+  .empty { padding: 30px; text-align: center; color: var(--hint); font-size: 14px; }
+
+  /* SPINNER */
+  .loading { opacity: .5; pointer-events: none; }
+
+  @media (max-width: 640px) {
+    header { padding: 0 12px; }
+    nav { gap: 0; }
+    nav button { padding: 8px 9px; font-size: 12px; }
+    main { padding: 16px 12px 50px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span>💰</span> Finance Toolkit</div>
+  <nav>
+    <button class="active" onclick="showTab('dashboard',this)">📊 Dashboard</button>
+    <button onclick="showTab('emi',this)">🏠 EMI</button>
+    <button onclick="showTab('loan',this)">💳 Loan</button>
+    <button onclick="showTab('sip',this)">📈 SIP</button>
+    <button onclick="showTab('lumpsum',this)">💎 Lump Sum</button>
+    <button onclick="showTab('interest',this)">📱 Interest</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- DASHBOARD -->
+<div id="tab-dashboard" class="section active">
+  <p class="page-title">Dashboard</p>
+  <p class="page-sub">Your financial planning overview</p>
+  <div class="metric-grid">
+    <div class="metric-card"><div class="icon">🏠</div><div class="label">Total EMI calculated</div><div class="value" id="d-emi">₹ 0</div></div>
+    <div class="metric-card"><div class="icon">📈</div><div class="label">Total SIP amount</div><div class="value" id="d-sip">₹ 0</div></div>
+    <div class="metric-card"><div class="icon">📊</div><div class="label">Investment growth</div><div class="value green" id="d-growth">₹ 0</div></div>
+    <div class="metric-card"><div class="icon">💸</div><div class="label">Total interest</div><div class="value" id="d-interest">₹ 0</div></div>
+  </div>
+  <div class="calc-card">
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Saved calculations</div>
+    <div id="history-list"><div class="empty">No saved calculations yet. Use the calculators and press Save.</div></div>
+  </div>
+</div>
+
+<!-- EMI CALCULATOR -->
+<div id="tab-emi" class="section">
+  <p class="page-title">Home Loan EMI Calculator</p>
+  <p class="page-sub">Calculate your monthly EMI, total interest, and payment</p>
+  <div class="calc-card" id="emi-card">
+    <div class="field">
+      <div class="field-header"><span class="field-label">Loan amount</span><span class="field-value" id="emi-amt-lbl">₹ 50,00,000</span></div>
+      <input type="range" id="emi-amt" min="100000" max="10000000" step="100000" value="5000000" oninput="calcEMI()">
+      <div class="range-bounds"><span>₹1L</span><span>₹1Cr</span></div>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-label">Interest rate (% p.a.)</span><span class="field-value" id="emi-rate-lbl">8.5%</span></div>
+      <input type="range" id="emi-rate" min="1" max="20" step="0.1" value="8.5" oninput="calcEMI()">
+      <div class="range-bounds"><span>1%</span><span>20%</span></div>
+    </div>
+    <div class="field">
+      <div class="tenure-row">
+        <label class="field-label">Tenure</label>
+        <div class="pill-group">
+          <button class="pill-btn" id="emi-mo-btn" onclick="emiTenure('months')">Months</button>
+          <button class="pill-btn active" id="emi-yr-btn" onclick="emiTenure('years')">Years</button>
+        </div>
+      </div>
+      <div class="field-header" style="margin-bottom:8px"><span></span><span class="field-value" id="emi-ten-lbl">20 years</span></div>
+      <input type="range" id="emi-ten" min="1" max="30" step="1" value="20" oninput="calcEMI()">
+      <div class="range-bounds"><span id="emi-tmin">1Y</span><span id="emi-tmax">30Y</span></div>
+    </div>
+    <div class="results">
+      <div class="result-row"><span class="result-label">Monthly EMI</span><span class="result-val big" id="emi-emi">₹ 0</span></div>
+      <div class="result-row"><span class="result-label">Total interest payable</span><span class="result-val green" id="emi-int">₹ 0</span></div>
+      <div class="result-row"><span class="result-label">Total payment</span><span class="result-val" id="emi-total">₹ 0</span></div>
+    </div>
+    <button class="save-btn" onclick="saveCalc('EMI', document.getElementById('emi-emi').textContent)">💾 Save Calculation</button>
+  </div>
+</div>
+
+<!-- LOAN CALCULATOR -->
+<div id="tab-loan" class="section">
+  <p class="page-title">Personal Loan Calculator</p>
+  <p class="page-sub">Flexible loan calculation with custom parameters</p>
+  <div class="calc-card" id="loan-card">
+    <div class="field">
+      <div class="field-header"><span class="field-label">Loan amount</span><span class="field-value" id="ln-amt-lbl">₹ 5,00,000</span></div>
+      <input type="range" id="ln-amt" min="10000" max="2000000" step="10000" value="500000" oninput="calcLoan()">
+      <div class="range-bounds"><span>₹10K</span><span>₹20L</span></div>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-label">Interest rate (% p.a.)</span><span class="field-value" id="ln-rate-lbl">12%</span></div>
+      <input type="range" id="ln-rate" min="5" max="30" step="0.5" value="12" oninput="calcLoan()">
+      <div class="range-bounds"><span>5%</span><span>30%</span></div>
+    </div>
+    <div class="field">
+      <div class="tenure-row">
+        <label class="field-label">Tenure</label>
+        <div class="pill-group">
+          <button class="pill-btn" id="ln-mo-btn" onclick="lnTenure('months')">Months</button>
+          <button class="pill-btn active" id="ln-yr-btn" onclick="lnTenure('years')">Years</button>
+        </div>
+      </div>
+      <div class="field-header" style="margin-bottom:8px"><span></span><span class="field-value" id="ln-ten-lbl">5 years</span></div>
+      <input type="range" id="ln-ten" min="1" max="10" step="1" value="5" oninput="calcLoan()">
+      <div class="range-bounds"><span id="ln-tmin">1Y</span><span id="ln-tmax">10Y</span></div>
+    </div>
+    <div class="results">
+      <div class="result-row"><span class="result-label">Monthly EMI</span><span class="result-val big" id="ln-emi">₹ 0</span></div>
+      <div class="result-row"><span class="result-label">Total interest payable</span><span class="result-val green" id="ln-int">₹ 0</span></div>
+      <div class="result-row"><span class="result-label">Total payment</span><span class="result-val" id="ln-total">₹ 0</span></div>
+    </div>
+    <button class="save-btn" onclick="saveCalc('Personal Loan', document.getElementById('ln-emi').textContent)">💾 Save Calculation</button>
+  </div>
+</div>
+
+<!-- SIP CALCULATOR -->
+<div id="tab-sip" class="section">
+  <p class="page-title">SIP Calculator</p>
+  <p class="page-sub">Calculate your investment growth through regular monthly investments</p>
+  <div class="calc-card" id="sip-card">
+    <div class="field">
+      <div class="field-header"><span class="field-label">Monthly investment</span><span class="field-value" id="sip-amt-lbl">₹ 10,000</span></div>
+      <input type="range" id="sip-amt" min="500" max="100000" step="500" value="10000" oninput="calcSIP()">
+      <div class="range-bounds"><span>₹500</span><span>₹1L</span></div>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-label">Expected return rate (% p.a.)</span><span class="field-value" id="sip-rate-lbl">12%</span></div>
+      <input type="range" id="sip-rate" min="5" max="30" step="0.5" value="12" oninput="calcSIP()">
+      <div class="range-bounds"><span>5%</span><span>30%</span></div>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-label">Investment period (years)</span><span class="field-value" id="sip-yr-lbl">15 years</span></div>
+      <input type="range" id="sip-yr" min="1" max="50" step="1" value="15" oninput="calcSIP()">
+      <div class="range-bounds"><span>1Y</span><span>50Y</span></div>
+    </div>
+    <div class="results">
+      <div class="result-row"><span class="result-label">Invested amount</span><span class="result-val" id="sip-inv">₹ 0</span></div>
+      <div class="result-row"><span class="result-label">Estimated returns</span><span class="result-val green" id="sip-ret">₹ 0</span></div>
+      <div class="result-row"><span class="result-label">Total value</span><span class="result-val big" id="sip-total">₹ 0</span></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="bar-chart" id="sip-bars">
+        <div class="bar-col"><div class="bar invested" id="bar-inv" style="height:60px"></div><div class="bar-label">Invested</div><div class="bar-val" id="bar-inv-val">-</div></div>
+        <div class="bar-col"><div class="bar returns" id="bar-ret" style="height:90px"></div><div class="bar-label">Returns</div><div class="bar-val" id="bar-ret-val">-</div></div>
+        <div class="bar-col"><div class="bar total" id="bar-tot" style="height:120px"></div><div class="bar-label">Total</div><div class="bar-val" id="bar-tot-val">-</div></div>
+      </div>
+    </div>
+    <button class="save-btn" onclick="saveCalc('SIP', document.getElementById('sip-total').textContent)">💾 Save Calculation</button>
+  </div>
+</div>
+
+<!-- LUMP SUM -->
+<div id="tab-lumpsum" class="section">
+  <p class="page-title">Lump Sum Investment Calculator</p>
+  <p class="page-sub">Calculate future value of your one-time investment</p>
+  <div class="calc-card" id="ls-card">
+    <div class="field">
+      <div class="field-header"><span class="field-label">Initial investment</span><span class="field-value" id="ls-amt-lbl">₹ 1,00,000</span></div>
+      <input type="range" id="ls-amt" min="10000" max="1000000" step="10000" value="100000" oninput="calcLS()">
+      <div class="range-bounds"><span>₹10K</span><span>₹10L</span></div>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-label">Rate of return (% p.a.)</span><span class="field-value" id="ls-rate-lbl">12%</span></div>
+      <input type="range" id="ls-rate" min="1" max="30" step="0.5" value="12" oninput="calcLS()">
+      <div class="range-bounds"><span>1%</span><span>30%</span></div>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-label">Time period (years)</span><span class="field-value" id="ls-yr-lbl">10 years</span></div>
+      <input type="range" id="ls-yr" min="1" max="50" step="1" value="10" oninput="calcLS()">
+      <div class="range-bounds"><span>1Y</span><span>50Y</span></div>
+    </div>
+    <div class="field">
+      <label class="field-label" style="display:block;margin-bottom:8px">Compounding frequency</label>
+      <select id="ls-freq" onchange="calcLS()">
+        <option value="1">Annually</option>
+        <option value="2">Semi-annually</option>
+        <option value="4">Quarterly</option>
+        <option value="12" selected>Monthly</option>
+      </select>
+    </div>
+    <div class="results">
+      <div class="result-row"><span class="result-label">Initial investment</span><span class="result-val" id="ls-princ">₹ 0</span></div>
+      <div class="result-row"><span class="result-label">Interest earned</span><span class="result-val green" id="ls-earned">₹ 0</span></div>
+      <div class="result-row"><span class="result-label">Future value</span><span class="result-val big" id="ls-fv">₹ 0</span></div>
+    </div>
+    <button class="save-btn" onclick="saveCalc('Lump Sum', document.getElementById('ls-fv').textContent)">💾 Save Calculation</button>
+  </div>
+</div>
+
+<!-- INTEREST CALCULATOR -->
+<div id="tab-interest" class="section">
+  <p class="page-title">Interest Calculator</p>
+  <p class="page-sub">Calculate simple or compound interest</p>
+  <div class="calc-card" id="int-card">
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="si-btn" onclick="intMode('SI')">Simple Interest</button>
+      <button class="toggle-btn" id="ci-btn" onclick="intMode('CI')">Compound Interest</button>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-label">Principal amount</span><span class="field-value" id="int-p-lbl">₹ 1,00,000</span></div>
+      <input type="range" id="int-p" min="1000" max="1000000" step="1000" value="100000" oninput="calcInt()">
+      <div class="range-bounds"><span>₹1K</span><span>₹10L</span></div>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-label">Rate of interest (% p.a.)</span><span class="field-value" id="int-r-lbl">8%</span></div>
+      <input type="range" id="int-r" min="0.1" max="30" step="0.1" value="8" oninput="calcInt()">
+      <div class="range-bounds"><span>0.1%</span><span>30%</span></div>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-label">Time period (years)</span><span class="field-value" id="int-t-lbl">5 years</span></div>
+      <input type="range" id="int-t" min="0.5" max="50" step="0.5" value="5" oninput="calcInt()">
+      <div class="range-bounds"><span>0.5Y</span><span>50Y</span></div>
+    </div>
+    <div class="field" id="ci-freq-wrap" style="display:none">
+      <label class="field-label" style="display:block;margin-bottom:8px">Compounding frequency</label>
+      <select id="int-freq" onchange="calcInt()">
+        <option value="1">Annually</option>
+        <option value="2">Semi-annually</option>
+        <option value="4">Quarterly</option>
+        <option value="12" selected>Monthly</option>
+        <option value="365">Daily</option>
+      </select>
+    </div>
+    <div class="results">
+      <div class="result-row"><span class="result-label">Principal</span><span class="result-val" id="int-princ">₹ 0</span></div>
+      <div class="result-row"><span class="result-label">Interest amount</span><span class="result-val green" id="int-amt">₹ 0</span></div>
+      <div class="result-row"><span class="result-label">Total amount</span><span class="result-val big" id="int-total">₹ 0</span></div>
+    </div>
+    <button class="save-btn" onclick="saveCalc('Interest', document.getElementById('int-total').textContent)">💾 Save Calculation</button>
+  </div>
+</div>
+
+</main>
+
+<script>
+const fmt = n => '₹ ' + Math.round(n).toLocaleString('en-IN');
+const pct = (a, b) => b ? ((a / b) * 100).toFixed(1) + '%' : '0%';
+let emiTenMode = 'years', lnTenMode = 'years', interestMode = 'SI';
+let saved = [], dashData = { emi: 0, sip: 0, growth: 0, interest: 0 };
+
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+async function post(url, data) {
+  const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  return r.json();
+}
+
+// EMI
+function emiTenure(m) {
+  emiTenMode = m;
+  const sl = document.getElementById('emi-ten');
+  if (m === 'months') { sl.min = 1; sl.max = 360; sl.step = 1; sl.value = 240; document.getElementById('emi-tmin').textContent = '1M'; document.getElementById('emi-tmax').textContent = '360M'; }
+  else { sl.min = 1; sl.max = 30; sl.step = 1; sl.value = 20; document.getElementById('emi-tmin').textContent = '1Y'; document.getElementById('emi-tmax').textContent = '30Y'; }
+  document.getElementById('emi-mo-btn').classList.toggle('active', m === 'months');
+  document.getElementById('emi-yr-btn').classList.toggle('active', m === 'years');
+  calcEMI();
+}
+
+async function calcEMI() {
+  const P = +document.getElementById('emi-amt').value;
+  const rate = +document.getElementById('emi-rate').value;
+  const tenVal = +document.getElementById('emi-ten').value;
+  const months = emiTenMode === 'years' ? tenVal * 12 : tenVal;
+  document.getElementById('emi-amt-lbl').textContent = fmt(P);
+  document.getElementById('emi-rate-lbl').textContent = rate + '%';
+  document.getElementById('emi-ten-lbl').textContent = emiTenMode === 'years' ? tenVal + ' years' : tenVal + ' months';
+  const d = await post('/api/emi', { principal: P, rate, tenure_months: months });
+  document.getElementById('emi-emi').textContent = fmt(d.emi) + ' /mo';
+  document.getElementById('emi-int').textContent = fmt(d.interest);
+  document.getElementById('emi-total').textContent = fmt(d.total);
+  dashData.emi = d.emi; updateDash();
+}
+
+// LOAN
+function lnTenure(m) {
+  lnTenMode = m;
+  const sl = document.getElementById('ln-ten');
+  if (m === 'months') { sl.min = 1; sl.max = 120; sl.step = 1; sl.value = 60; document.getElementById('ln-tmin').textContent = '1M'; document.getElementById('ln-tmax').textContent = '120M'; }
+  else { sl.min = 1; sl.max = 10; sl.step = 1; sl.value = 5; document.getElementById('ln-tmin').textContent = '1Y'; document.getElementById('ln-tmax').textContent = '10Y'; }
+  document.getElementById('ln-mo-btn').classList.toggle('active', m === 'months');
+  document.getElementById('ln-yr-btn').classList.toggle('active', m === 'years');
+  calcLoan();
+}
+
+async function calcLoan() {
+  const P = +document.getElementById('ln-amt').value;
+  const rate = +document.getElementById('ln-rate').value;
+  const tenVal = +document.getElementById('ln-ten').value;
+  const months = lnTenMode === 'years' ? tenVal * 12 : tenVal;
+  document.getElementById('ln-amt-lbl').textContent = fmt(P);
+  document.getElementById('ln-rate-lbl').textContent = rate + '%';
+  document.getElementById('ln-ten-lbl').textContent = lnTenMode === 'years' ? tenVal + ' years' : tenVal + ' months';
+  const d = await post('/api/emi', { principal: P, rate, tenure_months: months });
+  document.getElementById('ln-emi').textContent = fmt(d.emi) + ' /mo';
+  document.getElementById('ln-int').textContent = fmt(d.interest);
+  document.getElementById('ln-total').textContent = fmt(d.total);
+}
+
+// SIP
+async function calcSIP() {
+  const mo = +document.getElementById('sip-amt').value;
+  const rate = +document.getElementById('sip-rate').value;
+  const yr = +document.getElementById('sip-yr').value;
+  document.getElementById('sip-amt-lbl').textContent = fmt(mo);
+  document.getElementById('sip-rate-lbl').textContent = rate + '%';
+  document.getElementById('sip-yr-lbl').textContent = yr + ' years';
+  const d = await post('/api/sip', { monthly: mo, rate, years: yr });
+  document.getElementById('sip-inv').textContent = fmt(d.invested);
+  document.getElementById('sip-ret').innerHTML = fmt(d.returns) + ' <span class="badge">+' + pct(d.returns, d.invested) + '</span>';
+  document.getElementById('sip-total').textContent = fmt(d.fv);
+  const maxVal = d.fv;
+  const h = v => Math.max(8, Math.round((v / maxVal) * 120));
+  document.getElementById('bar-inv').style.height = h(d.invested) + 'px';
+  document.getElementById('bar-ret').style.height = h(d.returns) + 'px';
+  document.getElementById('bar-tot').style.height = h(d.fv) + 'px';
+  document.getElementById('bar-inv-val').textContent = fmt(d.invested);
+  document.getElementById('bar-ret-val').textContent = fmt(d.returns);
+  document.getElementById('bar-tot-val').textContent = fmt(d.fv);
+  dashData.sip = d.invested; dashData.growth = d.returns; updateDash();
+}
+
+// LUMP SUM
+async function calcLS() {
+  const P = +document.getElementById('ls-amt').value;
+  const rate = +document.getElementById('ls-rate').value;
+  const yr = +document.getElementById('ls-yr').value;
+  const freq = +document.getElementById('ls-freq').value;
+  document.getElementById('ls-amt-lbl').textContent = fmt(P);
+  document.getElementById('ls-rate-lbl').textContent = rate + '%';
+  document.getElementById('ls-yr-lbl').textContent = yr + ' years';
+  const d = await post('/api/lumpsum', { principal: P, rate, years: yr, freq });
+  document.getElementById('ls-princ').textContent = fmt(d.principal);
+  document.getElementById('ls-earned').innerHTML = fmt(d.earned) + ' <span class="badge">+' + pct(d.earned, d.principal) + '</span>';
+  document.getElementById('ls-fv').textContent = fmt(d.fv);
+}
+
+// INTEREST
+function intMode(m) {
+  interestMode = m;
+  document.getElementById('si-btn').classList.toggle('active', m === 'SI');
+  document.getElementById('ci-btn').classList.toggle('active', m === 'CI');
+  document.getElementById('ci-freq-wrap').style.display = m === 'CI' ? 'block' : 'none';
+  calcInt();
+}
+
+async function calcInt() {
+  const P = +document.getElementById('int-p').value;
+  const rate = +document.getElementById('int-r').value;
+  const t = +document.getElementById('int-t').value;
+  const freq = +document.getElementById('int-freq').value;
+  document.getElementById('int-p-lbl').textContent = fmt(P);
+  document.getElementById('int-r-lbl').textContent = rate + '%';
+  document.getElementById('int-t-lbl').textContent = t + ' years';
+  const d = await post('/api/interest', { principal: P, rate, years: t, mode: interestMode, freq });
+  document.getElementById('int-princ').textContent = fmt(d.principal);
+  document.getElementById('int-amt').innerHTML = fmt(d.interest) + ' <span class="badge">+' + pct(d.interest, d.principal) + '</span>';
+  document.getElementById('int-total').textContent = fmt(d.total);
+  dashData.interest = d.interest; updateDash();
+}
+
+function saveCalc(type, val) {
+  saved.unshift({ type, val, date: new Date().toLocaleDateString('en-IN') });
+  renderHistory();
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!saved.length) { el.innerHTML = '<div class="empty">No saved calculations yet.</div>'; return; }
+  el.innerHTML = saved.slice(0, 10).map(s =>
+    `<div class="history-item"><div class="hist-left"><span class="hist-type">${s.type}</span><span class="hist-date">${s.date}</span></div><span class="hist-val">${s.val}</span></div>`
+  ).join('');
+}
+
+function updateDash() {
+  document.getElementById('d-emi').textContent = fmt(dashData.emi);
+  document.getElementById('d-sip').textContent = fmt(dashData.sip);
+  document.getElementById('d-growth').textContent = fmt(dashData.growth);
+  document.getElementById('d-interest').textContent = fmt(dashData.interest);
+}
+
+// Init all calculators on load
+calcEMI(); calcLoan(); calcSIP(); calcLS(); calcInt();
+</script>
+</body>
+</html>
